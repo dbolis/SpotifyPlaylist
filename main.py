@@ -12,22 +12,80 @@ class SaveSongs:
         self.tracks = ""
         self.features=""
         self.new_playlist_id=""
-
+        self.header = ""
     def find_songs(self):
         print("Finding Songs")
-
-        query = "https://api.spotify.com/v1/playlists/{}/tracks".format(DJ_playlist)
-
-        response = requests.get(query,
-        headers={"Content-Type": "application/json", "Authorization": "Bearer {}".format(self.spotify_token)})
-
-        response_json = response.json()
         
-        for i in response_json["items"]:
-            self.tracks += (i["track"]["id"] + ",")
-        self.tracks = self.tracks[:-1]
+        tracks=[]
         
-        print(self.tracks)  
+        ## get playlists 
+
+        queryPlaylists = "https://api.spotify.com/v1/users/{}/playlists?limit={}".format(self.spotify_user_id,10) # fix limit
+        responsePlaylists = requests.get(queryPlaylists, headers=self.header)
+        
+
+        for playlist in responsePlaylists.json()["items"]:
+            print(playlist["name"])
+            
+            queryPlaylistTracks = "https://api.spotify.com/v1/playlists/{}/tracks".format(playlist["id"])
+
+            responsePlaylistTracks = requests.get(queryPlaylistTracks, headers=self.header)
+            print(responsePlaylistTracks)
+            for track in responsePlaylistTracks.json()["items"]:
+                
+                tracks.append(track["track"]["id"])
+
+
+        ## get albums
+
+        queryAlbums = "https://api.spotify.com/v1/me/albums"
+        responseAlbums = requests.get(queryAlbums, headers=self.header) # add limit
+        print(responseAlbums)
+        
+        for album in responseAlbums.json()["items"]:
+
+            for track in album["album"]["tracks"]["items"]:
+                tracks.append(track["id"])
+                
+            
+        ## get saved tracks
+
+        querySavedTracks = "https://api.spotify.com/v1/me/tracks"
+
+        responseSavedTracks = requests.get(querySavedTracks,headers=self.header) ## add limit
+        print(responseSavedTracks)
+        
+        for track in responseSavedTracks.json()["items"]:
+            tracks.append(track["track"]["id"])
+            
+        
+        
+
+        tracks = set(tracks)
+        
+        if None in tracks:
+            tracks.remove(None)
+        tracks=list(tracks)
+        
+        tracks_str = ""
+        for i in range(99):
+            tracks_str += (tracks[i] + ",")
+        tracks_str = tracks_str[:-1]
+        
+
+        self.tracks = tracks_str
+
+        print(len(self.tracks), self.tracks)
+        # response = requests.get(query,
+        # headers=self.header)
+
+        # response_json = response.json()
+        
+        # for i in response_json["items"]:
+        #     self.tracks += (i["track"]["id"] + ",")
+        # self.tracks = self.tracks[:-1]
+        
+        # print(self.tracks)  
         
         self.get_song_features()
 
@@ -43,7 +101,7 @@ class SaveSongs:
         self.features = response.json()["audio_features"]
         print(self.features)
 
-        self.filter('n','n','n','n','n','n')
+        self.filter('n','n','n','n','m','m')
 
 
     def filter(self, dance, energy, acoustic, instrumental, valence, tempo):
@@ -102,7 +160,7 @@ class SaveSongs:
         query = "https://api.spotify.com/v1/users/{}/playlists".format(spotify_user_id)
 
         request_body = json.dumps({
-            "name": "playlist name",
+            "name": "CHODO BAGGINS",
             "description": "test playlist",
             "public": True
         })
@@ -118,7 +176,7 @@ class SaveSongs:
     def add_to_playlist(self):
 
         self.new_playlist_id = self.create_playlist()
-        print(self.tracks)
+        print(len(self.tracks), self.tracks)
         print(self.new_playlist_id)
         query ="https://api.spotify.com/v1/playlists/{}/tracks?uris={}".format(self.new_playlist_id, self.tracks)
 
@@ -127,12 +185,13 @@ class SaveSongs:
             "Authorization": "Bearer {}".format(self.spotify_token)
         })
     
-        print(response.json)
+        print(response)
 
     def call_refresh(self):
         refreshCaller = Refresh()
 
         self.spotify_token = refreshCaller.refresh()
+        self.header = {"Content-Type": "application/json", "Authorization": "Bearer {}".format(self.spotify_token)}
 
     
         
