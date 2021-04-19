@@ -1,18 +1,21 @@
 import json
 import requests
+import random
 
 from secrets import spotify_user_id, DJ_playlist
 from refresh import Refresh
 
 class SaveSongs:
-    def __init__(self):
+    def __init__(self, max_playlist_length):
         self.spotify_user_id = spotify_user_id
         self.spotify_token = ""
         self.DJ_playlist = DJ_playlist
-        self.tracks = ""
+        self.tracks = []
+        self.new_tracks=[]
         self.features=""
         self.new_playlist_id=""
         self.header = ""
+        self.max_playlist_length = max_playlist_length
     def find_songs(self):
         print("Finding Songs")
         
@@ -20,7 +23,7 @@ class SaveSongs:
         
         ## get playlists 
 
-        queryPlaylists = "https://api.spotify.com/v1/users/{}/playlists?limit={}".format(self.spotify_user_id,10) # fix limit
+        queryPlaylists = "https://api.spotify.com/v1/users/{}/playlists?limit={}".format(self.spotify_user_id,50) # fix limit
         responsePlaylists = requests.get(queryPlaylists, headers=self.header)
         
 
@@ -38,7 +41,7 @@ class SaveSongs:
 
         ## get albums
 
-        queryAlbums = "https://api.spotify.com/v1/me/albums"
+        queryAlbums = "https://api.spotify.com/v1/me/albums?limit={}".format(50)
         responseAlbums = requests.get(queryAlbums, headers=self.header) # add limit
         print(responseAlbums)
         
@@ -49,16 +52,28 @@ class SaveSongs:
                 
             
         ## get saved tracks
+        offset = 50
+        querySavedTracks = "https://api.spotify.com/v1/me/tracks?limit={}".format(50)
 
-        querySavedTracks = "https://api.spotify.com/v1/me/tracks"
-
-        responseSavedTracks = requests.get(querySavedTracks,headers=self.header) ## add limit
+        responseSavedTracks = requests.get(querySavedTracks,headers=self.header) 
         print(responseSavedTracks)
         
         for track in responseSavedTracks.json()["items"]:
             tracks.append(track["track"]["id"])
             
-        
+        total = responseSavedTracks.json()["total"]
+        print(total)
+        while total-offset>0:
+            print(total-offset)
+            querySavedTracks = "https://api.spotify.com/v1/me/tracks?limit={}&offset={}".format(50,offset)
+
+            responseSavedTracks = requests.get(querySavedTracks,headers=self.header) 
+
+            for track in responseSavedTracks.json()["items"]:
+                tracks.append(track["track"]["id"])
+                print(track["track"]["name"])
+            offset+=50 
+            
         
 
         tracks = set(tracks)
@@ -66,16 +81,18 @@ class SaveSongs:
         if None in tracks:
             tracks.remove(None)
         tracks=list(tracks)
+
+        self.tracks=tracks
         
-        tracks_str = ""
-        for i in range(99):
-            tracks_str += (tracks[i] + ",")
-        tracks_str = tracks_str[:-1]
+        # tracks_str = ""
+        # for i in range(99):
+        #     tracks_str += (tracks[i] + ",")
+        # tracks_str = tracks_str[:-1]
         
 
-        self.tracks = tracks_str
+        # self.tracks = tracks_str
 
-        print(len(self.tracks), self.tracks)
+        # print(len(self.tracks), self.tracks)
         # response = requests.get(query,
         # headers=self.header)
 
@@ -92,16 +109,31 @@ class SaveSongs:
     def get_song_features(self):
         
         print("Getting Track Feautres")
+        features = []
+        i=0
+        while i<len(self.tracks):
+            tracks_str = ""
+            if len(self.tracks)-i<99:
+                remain = len(self.tracks)-i
+            else:
+                remain = 99
 
-        query = "https://api.spotify.com/v1/audio-features?{}".format("ids=" + self.tracks)
+            for j in range(i,i+remain):
+                tracks_str += (self.tracks[j] + ",")
+            tracks_str = tracks_str[:-1]
 
-        response = requests.get(query,
-        headers={"Content-Type": "application/json", "Authorization": "Bearer {}".format(self.spotify_token)})
 
-        self.features = response.json()["audio_features"]
-        print(self.features)
+            query = "https://api.spotify.com/v1/audio-features?{}".format("ids=" + tracks_str)
 
-        self.filter('n','n','n','n','m','m')
+            response = requests.get(query, headers=self.header)
+
+            features += response.json()["audio_features"]
+            i+=99
+            print("while loop", i)
+        
+        # print(features, len(features), len(self.tracks))
+        self.features = features
+        self.filter('n','n','m','n','m','m')
 
 
     def filter(self, dance, energy, acoustic, instrumental, valence, tempo):
@@ -128,31 +160,31 @@ class SaveSongs:
             ranges.append([0,200])
 
 
-        print(ranges)
-        print(self.features)
-        print(len(self.features))
-        for track in self.features:
-            print(track["id"])
-            print("danceability: " + str(track["danceability"]))
-            print("energy: " + str(track["energy"]))
-            print("acousticness: " + str(track["acousticness"]))
-            print("instrumentalness: " + str(track["instrumentalness"]))
-            print("valence: " + str(track["valence"]))
-            print("tempo: " + str(track["tempo"]))
-            print("--------")
+        # print(ranges)
+        # print(self.features)
+        # print(len(self.features))
+        # for track in self.features:
+        #     print(track["id"])
+        #     print("danceability: " + str(track["danceability"]))
+        #     print("energy: " + str(track["energy"]))
+        #     print("acousticness: " + str(track["acousticness"]))
+        #     print("instrumentalness: " + str(track["instrumentalness"]))
+        #     print("valence: " + str(track["valence"]))
+        #     print("tempo: " + str(track["tempo"]))
+        #     print("--------")
 
-        out = ""
+        out = []
         for track in self.features:
             if ranges[0][0]<=track["danceability"]<=ranges[0][1] and ranges[1][0]<=track["energy"]<=ranges[1][1] and \
             ranges[2][0]<=track["acousticness"]<=ranges[2][1] and ranges[3][0]<=track["instrumentalness"]<=ranges[3][1] and \
             ranges[4][0]<=track["valence"]<=ranges[4][1] and ranges[5][0]<=track["tempo"]<=ranges[5][1]:
 
-                out += track["uri"] + ","
+                out.append(track["uri"])
 
-        out = out[:-1]
-        print (out)
-        self.tracks=out
-
+        # out = out[:-1]
+        # print (out)
+        self.new_tracks=out
+        # print(self.new_tracks.count(","), self.new_tracks)
         self.add_to_playlist()
 
     def create_playlist(self):
@@ -160,15 +192,12 @@ class SaveSongs:
         query = "https://api.spotify.com/v1/users/{}/playlists".format(spotify_user_id)
 
         request_body = json.dumps({
-            "name": "CHODO BAGGINS",
+            "name": "New Playlist",
             "description": "test playlist",
             "public": True
         })
 
-        response = requests.post(query, data=request_body,  headers={
-            "Content-Type": "application/json", 
-            "Authorization": "Bearer {}".format(self.spotify_token)
-        })
+        response = requests.post(query, data=request_body,  headers=self.header)
             
         response_json = response.json()
         return response_json["id"]
@@ -176,16 +205,22 @@ class SaveSongs:
     def add_to_playlist(self):
 
         self.new_playlist_id = self.create_playlist()
-        print(len(self.tracks), self.tracks)
-        print(self.new_playlist_id)
-        query ="https://api.spotify.com/v1/playlists/{}/tracks?uris={}".format(self.new_playlist_id, self.tracks)
+        
+        if len(self.new_tracks)>self.max_playlist_length:
+            self.new_tracks = random.sample(self.new_tracks, self.max_playlist_length) # need to require user input to be max 100!
+        
 
-        response = requests.post(query,  headers={
-            "Content-Type": "application/json", 
-            "Authorization": "Bearer {}".format(self.spotify_token)
+
+        query ="https://api.spotify.com/v1/playlists/{}/tracks".format(self.new_playlist_id)
+
+        request_body = json.dumps({
+            "uris":self.new_tracks
         })
+        response = requests.post(query, data=request_body, headers= self.header)
+        
     
         print(response)
+        print(self.max_playlist_length)
 
     def call_refresh(self):
         refreshCaller = Refresh()
@@ -197,7 +232,7 @@ class SaveSongs:
         
 
 
-a=SaveSongs()
+a=SaveSongs(20)
 a.call_refresh()
 a.find_songs()
 
