@@ -2,7 +2,7 @@ import json
 import requests
 import random
 
-from secrets import spotify_user_id, DJ_playlist
+from secrets import spotify_user_id, DJ_playlist, tommy_user_id
 from refresh import Refresh
 
 class SaveSongs:
@@ -10,12 +10,14 @@ class SaveSongs:
         self.spotify_user_id = spotify_user_id
         self.spotify_token = ""
         self.DJ_playlist = DJ_playlist
+        self.tommy_user_id = tommy_user_id
         self.tracks = []
         self.new_tracks=[]
         self.features=""
         self.new_playlist_id=""
         self.header = ""
         self.max_playlist_length = max_playlist_length
+
     def find_songs(self):
         print("Finding Songs")
         
@@ -106,6 +108,16 @@ class SaveSongs:
         
         self.get_song_features()
 
+    def get_user_playlists(self):
+        print("getting public playlists")
+
+        query = "https://api.spotify.com/v1/users/{}/playlists?limit={}".format(self.spotify_user_id,50)
+
+        response = requests.get(query, headers=self.header)
+
+
+        print(response.json())
+
     def get_song_features(self):
         
         print("Getting Track Feautres")
@@ -131,8 +143,13 @@ class SaveSongs:
             i+=99
             print("while loop", i)
         
-        # print(features, len(features), len(self.tracks))
-        self.features = features
+        clean_features = [] # get rid of None
+        for feature in features:
+            if feature != None:
+                clean_features.append(feature)
+        
+        self.features = clean_features
+
         self.filter('n','n','m','n','m','m')
 
 
@@ -181,10 +198,9 @@ class SaveSongs:
 
                 out.append(track["uri"])
 
-        # out = out[:-1]
-        # print (out)
+
         self.new_tracks=out
-        # print(self.new_tracks.count(","), self.new_tracks)
+        
         self.add_to_playlist()
 
     def create_playlist(self):
@@ -216,9 +232,9 @@ class SaveSongs:
         request_body = json.dumps({
             "uris":self.new_tracks
         })
-        response = requests.post(query, data=request_body, headers= self.header)
+        response = requests.post(query, data=request_body, headers=self.header)
         
-    
+        print(len(self.new_tracks))
         print(response)
         print(self.max_playlist_length)
 
@@ -234,6 +250,7 @@ class SaveSongs:
 
 a=SaveSongs(20)
 a.call_refresh()
-a.find_songs()
+a.get_user_playlists()
+# a.find_songs()
 
 
