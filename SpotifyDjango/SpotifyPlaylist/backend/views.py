@@ -34,25 +34,48 @@ def success(request):
     instrument_m = request.POST["instrument_m"]
     instrument_h = request.POST["instrument_h"]
 
-    valance_l = request.POST["valance_l"]
-    valance_m = request.POST["valance_m"]
-    valance_h = request.POST["valance_h"]
+    valence_l = request.POST["valence_l"]
+    valence_m = request.POST["valence_m"]
+    valence_h = request.POST["valence_h"]
 
     length_l = request.POST["length_l"]
     length_m = request.POST["length_m"]
     length_h = request.POST["length_h"]
 
+    if dance_l=="0" and dance_m=="0" and dance_h=="0":
+        dance_l,dance_m,dance_h = "1","1","1"
+
+    if energy_l=="0" and energy_m=="0" and energy_h=="0":
+        energy_l,energy_m,energy_h = "1","1","1"
+
+    if acoustic_l=="0" and acoustic_m=="0" and acoustic_h=="0":
+        acoustic_l,acoustic_m,acoustic_h = "1","1","1"
+
+    if instrument_l=="0" and instrument_m=="0" and instrument_h=="0":
+        instrument_l,instrument_m,instrument_h = "1","1","1"
+
+    if valence_l=="0" and valence_m=="0" and valence_h=="0":
+        valence_l,valence_m,valence_h = "1","1","1"
+
+    if length_l=="0" and length_m=="0" and length_h=="0":
+        length_l,length_m,length_h = "1","1","1"                
+
     print([playlistName, dance_l, dance_m, dance_h, energy_l, energy_m, energy_h,\
         acoustic_l, acoustic_m, acoustic_h, instrument_l, instrument_m, instrument_h, \
-        valance_l, valance_m, valance_h, length_l, length_m, length_h])
+        valence_l, valence_m, valence_h, length_l, length_m, length_h])
 
-    # user_features = [dance, energy, acoustic, instrumental, valance, length]
+    user_features = {"dance": [dance_l, dance_m, dance_h], 
+                "energy": [energy_l, energy_m, energy_h],
+                "acoustic": [acoustic_l, acoustic_m, acoustic_h], 
+                "instrument": [instrument_l, instrument_m, instrument_h],
+                "valence": [valence_l, valence_m, valence_h], 
+                "length": [length_l, length_m, length_h]}
     
     
 
-    # a=main.SaveSongs(50,playlistName, user_features)
+    a=main.SaveSongs(50,playlistName, user_features)
     
-    # a.call_refresh()
-    # # a.get_user_playlists()
-    # a.find_songs()
+    a.call_refresh()
+    # a.get_user_playlists()
+    a.find_songs()
     return render(request, 'success.html')

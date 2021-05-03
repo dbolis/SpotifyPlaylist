@@ -159,29 +159,70 @@ class SaveSongs:
 
         # inputs = [dance, energy, acoustic, instrumental, valence]
         ranges = [] # [dance, energy, acoustic, instrumental, valance, length]
-        for i in inputs[:-1]:
-            if i == "l":
-                ranges.append([0,0.33])
-            elif i == "m":
-                ranges.append([0.33,0.66])
-            elif i == "h":
-                ranges.append([0.66,1])
-            else:
-                ranges.append([0,1])
+        # for i in inputs[:-1]:
+        #     if i == "l":
+        #         ranges.append([0,0.33])
+        #     elif i == "m":
+        #         ranges.append([0.33,0.66])
+        #     elif i == "h":
+        #         ranges.append([0.66,1])
+        #     else:
+        #         ranges.append([0,1])
 
-        if inputs[5] == "l": # Song length
-            ranges.append([0,90000])
-        elif inputs[5] == "m":
-            ranges.append([90000,300000])
-        elif inputs[5] == "h":
-            ranges.append([300000,3000000])
-        else:
-            ranges.append([0,3000000])
+        # if inputs[5] == "l": # Song length
+        #     ranges.append([0,90000])
+        # elif inputs[5] == "m":
+        #     ranges.append([90000,300000])
+        # elif inputs[5] == "h":
+        #     ranges.append([300000,3000000])
+        # else:
+        #     ranges.append([0,3000000])
 
         print(ranges)
 
-        
-        # print(ranges)
+        rangeDict = {
+            "dance":{
+                    0:[0,0.33],
+                    1:[0.33,0.66],
+                    2:[0.66,1]
+                },
+                    
+            "energy":{
+                    0:[0,0.33],
+                    1:[0.33,0.66],
+                    2:[0.66,1]
+                },
+            "acoustic":{
+                    0:[0,0.33],
+                    1:[0.33,0.66],
+                    2:[0.66,1]
+                },
+            "instrument":{
+                    0:[0,0.33],
+                    1:[0.33,0.66],
+                    2:[0.66,1]
+                },
+            "valence":{
+                    0:[0,0.33],
+                    1:[0.33,0.66],
+                    2:[0.66,1]
+                },
+            "length":{
+                    0:[0,90000],
+                    1:[90000,300000],
+                    2:[300000,3000000]
+                }
+        }
+
+        for feature in inputs:
+            for i in range(0,3):
+                if inputs[feature][i]=="1":
+                    ranges.append(rangeDict[feature][i])
+                else:
+                    ranges.append([0,0])
+
+
+        print(ranges)
         # print(self.features)
         # print(len(self.features))
         # for track in self.features:
@@ -194,18 +235,19 @@ class SaveSongs:
         #     print("tempo: " + str(track["tempo"]))
         #     print("--------")
 
-        out = []
-        for track in self.features:
-            if ranges[0][0]<=track["danceability"]<=ranges[0][1] and ranges[1][0]<=track["energy"]<=ranges[1][1] and \
-            ranges[2][0]<=track["acousticness"]<=ranges[2][1] and ranges[3][0]<=track["instrumentalness"]<=ranges[3][1] and \
-            ranges[4][0]<=track["valence"]<=ranges[4][1] and ranges[5][0]<=track["duration_ms"]<=ranges[5][1]:
+        # out = []
 
-                out.append(track["uri"])
+        # for track in self.features:
+        #     if ranges[0][0]<=track["danceability"]<=ranges[0][1] and ranges[1][0]<=track["energy"]<=ranges[1][1] and \
+        #     ranges[2][0]<=track["acousticness"]<=ranges[2][1] and ranges[3][0]<=track["instrumentalness"]<=ranges[3][1] and \
+        #     ranges[4][0]<=track["valence"]<=ranges[4][1] and ranges[5][0]<=track["duration_ms"]<=ranges[5][1]:
+
+        #         out.append(track["uri"])
 
 
-        self.new_tracks=out
+        # self.new_tracks=out
         
-        self.add_to_playlist()
+        # self.add_to_playlist()
 
     def create_playlist(self):
         print("creating playlist")
