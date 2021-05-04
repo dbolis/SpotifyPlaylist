@@ -12,18 +12,33 @@
 </head>
 <body>
     
-  <nav class="navbar navbar-dark bg-dark">
+  <!-- <nav class="navbar navbar-dark bg-dark">
     <div class="container-fluid">
       <span class="navbar-brand mb-0 h1">Create a Playlist</span>
     </div>
-  </nav>
-
+  </nav> -->
+  <div class="text-center mt-4 mb-3">
+    <h1><strong>Create a Spotify Playlist</strong></h1>
+  </div>
 
   <div class="container-fluid">
-    <form class="needs-validation" novalidate method="post" action="success">
+    <div class="row text-center">
+      <div class="col-3"></div>
+      <div class="col-6">
+        <div class="card">
+          <div class="card-body">
+            
+            <h5>Select one or muliple ranges for each attribute below</h5>
+            <h5>The resulting playlist will include tracks that fall into the ranges specified</h5>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    <form class="needs-validation" novalidate method="post" id="mainForm" action="success">
 
       {% csrf_token %}
-      <div class="row mt-5">
+      <div class="row mt-2">
         <div class="col-3"></div>
         <div class="col-3">
           <div class="card">
@@ -34,7 +49,7 @@
               <!-- <p class="card-text"> A measure of how suitable a track is for dancing</p> -->
               <div class="text-center">
                 <div class="btn-group" role="group">
-
+                  
                   <input type="hidden" class="btn-check" name="dance_l" value="0">
                   <input type="checkbox" class="btn-check" name="dance_l" id="dance2" value="1">
                   <label class="btn btn-outline-success" for="dance2">Low</label>
@@ -147,7 +162,7 @@
         <div class="col-3">
           <div class="card">
             <div class="card-header text-center">
-              <h5>How Happy?</h5>
+              <h5>How Cheerful?</h5>
             </div>
             <div class="card-body">
               <div class="text-center">
@@ -211,16 +226,44 @@
           <div class="card">
             
             <div class="card-body">
-              <input class="form-control" type="text" placeholder="Playlist Name" name="name" required>
+              <div class="row">
+                <div class="col-6">
+                  <label for="playlistName" class="form-label"><strong>Playlist Name</strong></label>
+                  <input class="form-control" type="text" placeholder="" name="name" id="playlistName" required>
+                </div>
+                <div class="col-6">
+                  <label for="playlistLength" class="form-label"><strong>Max Playlist Length (# of tracks)</strong></label>
+                  <!-- <input class="form-control" type="number" id="PlaylistLength" placeholder="" min="0" max="50" name="name" oninput="validity.valid||(value='');" required> -->
+                  <div class="btn-group" role="group">
+
+                    
+                    <input type="radio" class="btn-check" name="playlistLength" id="length10" value="20" checked>
+                    <label class="btn btn-outline-secondary" for="length10">20</label>
+                  
+                    <input type="radio" class="btn-check" name="playlistLength" id="length20" value="40">
+                    <label class="btn btn-outline-secondary" for="length20">40</label>
+                    
+                    <input type="radio" class="btn-check" name="playlistLength" id="length30" value="60">
+                    <label class="btn btn-outline-secondary" for="length30">60</label>
+
+                    <input type="radio" class="btn-check" name="playlistLength" id="length40" value="80">
+                    <label class="btn btn-outline-secondary" for="length40">80</label>
+
+                    <input type="radio" class="btn-check" name="playlistLength" id="length50" value="100">
+                    <label class="btn btn-outline-secondary" for="length50">100</label>
+  
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
       
-      <div class="row mt-3 text-center">
+      <div class="row mt-3 mb-5 text-center">
         <div class="col-4"></div>
         <div class="col-4">
-          <button class="btn btn-dark" type="submit">Submit form</button>
+          <button class="btn btn-dark" type="submit" id="submitBtn">Submit form</button>
         </div>
         <div class="col-4"></div>
       </div>
@@ -230,6 +273,7 @@
     
  
   </div>
+
 
 
 
@@ -255,8 +299,23 @@
 })()
   </script>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
+  <script>
+    (function () {
+      const mainForm = document.getElementById("mainForm")
+      mainForm.addEventListener('submit', function(e){
+        if (mainForm.checkValidity()){
 
+          const submitBtn = document.getElementById("submitBtn")
+          submitBtn.disabled = "disabled"
+          submitBtn.innerHTML = "Loading your saved tracks..."
+        }
+      
+    }
+  )})()
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
+  
 </body>
 
 </html>

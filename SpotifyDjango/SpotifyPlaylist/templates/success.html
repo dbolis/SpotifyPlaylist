@@ -11,20 +11,20 @@
   </style>
 </head>
 <body class="text-center">
-    <nav class="navbar navbar-dark bg-dark">
-        <div class="container-fluid">
-            <span class="navbar-brand mb-0 h1">Create a Playlist</span>
-        </div>
-    </nav>
+
+    <div class="text-center mt-4 mb-3">
+        <h1><strong>Create a Spotify Playlist</strong></h1>
+    </div>
     <div class="container-fluid">
         <div class="row mt-5">
-            <div class="col-4"></div>
-            <div class="col-4">
-                <div class="card">
-                    <div class="card-body ">
+            <div class="col-3"></div>
+            <div class="col-6">
+                <div class="card {{color}}">
+                    <div class="card-body primary">
                         
-                        <h1>Success!</h1>
-                        <h5>Check your Spotify App!</h5>
+                        <h1>{{status}}</h1>
+                        <h4>{{subtext}}</h4>
+
                     </div>       
                 </div>
                 
@@ -33,7 +33,13 @@
     </div>
 
 
-
+    <div class="row mt-5">
+        <div class="col-4"></div>
+        <div class="col-4">
+          <a class="btn btn-dark" type="submit" id="submitBtn" href="/">Create Another Playlist</a>
+        </div>
+        <div class="col-4"></div>
+    </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
 </body>

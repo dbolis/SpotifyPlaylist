@@ -17,6 +17,9 @@ def index(request):
 def success(request):
     
     playlistName = request.POST["name"]
+    playlistLength = int(request.POST["playlistLength"])
+
+    print(playlistLength)
 
     dance_l = request.POST["dance_l"]
     dance_m = request.POST["dance_m"]
@@ -73,9 +76,14 @@ def success(request):
     
     
 
-    a=main.SaveSongs(50,playlistName, user_features)
+    spotifyObject=main.SaveSongs(playlistLength,playlistName, user_features)
     
-    a.call_refresh()
+    spotifyObject.call_refresh()
     # a.get_user_playlists()
-    a.find_songs()
-    return render(request, 'success.html')
+    spotifyObject.find_songs()
+    print(spotifyObject.get_status())
+
+    if spotifyObject.get_status():
+        return render(request, 'success.html', {"status":"Success! "+playlistName+" has been created.","subtext":"Check your Spotify App!","color":"border-success"})
+    else:
+        return render(request, 'success.html', {"status":"No tracks fit your specified ranges!","subtext":"Expand your ranges and try again.","color":"border-danger"})

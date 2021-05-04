@@ -19,6 +19,7 @@ class SaveSongs:
         self.max_playlist_length = max_playlist_length
         self.playlist_name = playlist_name
         self.user_features = user_features
+        self.status = False
 
     def find_songs(self):
         print("Finding Songs")
@@ -178,7 +179,6 @@ class SaveSongs:
         # else:
         #     ranges.append([0,3000000])
 
-        print(ranges)
 
         rangeDict = {
             "dance":{
@@ -235,8 +235,17 @@ class SaveSongs:
         #     print("tempo: " + str(track["tempo"]))
         #     print("--------")
 
-        # out = []
+        out = []
 
+        for track in self.features:
+            if (ranges[0][0]<=track["danceability"]<=ranges[0][1] or ranges[1][0]<=track["danceability"]<=ranges[1][1] or ranges[2][0]<=track["danceability"]<=ranges[2][1]) and \
+            (ranges[3][0]<=track["energy"]<=ranges[3][1] or ranges[4][0]<=track["energy"]<=ranges[4][1] or ranges[5][0]<=track["energy"]<=ranges[5][1]) and \
+            (ranges[6][0]<=track["acousticness"]<=ranges[6][1] or ranges[7][0]<=track["acousticness"]<=ranges[7][1] or ranges[8][0]<=track["acousticness"]<=ranges[8][1]) and \
+            (ranges[9][0]<=track["instrumentalness"]<=ranges[9][1] or ranges[10][0]<=track["instrumentalness"]<=ranges[10][1] or ranges[11][0]<=track["instrumentalness"]<=ranges[11][1]) and \
+            (ranges[12][0]<=track["valence"]<=ranges[12][1] or ranges[13][0]<=track["valence"]<=ranges[13][1] or ranges[14][0]<=track["valence"]<=ranges[14][1]) and \
+            (ranges[15][0]<=track["duration_ms"]<=ranges[15][1] or ranges[16][0]<=track["duration_ms"]<=ranges[16][1] or ranges[17][0]<=track["duration_ms"]<=ranges[17][1]):
+                
+                out.append(track["uri"])
         # for track in self.features:
         #     if ranges[0][0]<=track["danceability"]<=ranges[0][1] and ranges[1][0]<=track["energy"]<=ranges[1][1] and \
         #     ranges[2][0]<=track["acousticness"]<=ranges[2][1] and ranges[3][0]<=track["instrumentalness"]<=ranges[3][1] and \
@@ -245,9 +254,12 @@ class SaveSongs:
         #         out.append(track["uri"])
 
 
-        # self.new_tracks=out
+
+        print(out, len(out))
+        self.new_tracks=out
         
-        # self.add_to_playlist()
+        if len(self.new_tracks)!=0:
+            self.add_to_playlist()
 
     def create_playlist(self):
         print("creating playlist")
@@ -266,6 +278,7 @@ class SaveSongs:
 
     def add_to_playlist(self):
 
+
         self.new_playlist_id = self.create_playlist()
         
         if len(self.new_tracks)>self.max_playlist_length:
@@ -283,6 +296,11 @@ class SaveSongs:
         print(len(self.new_tracks))
         print(response)
         print(self.max_playlist_length)
+
+        self.status = True
+
+    def get_status(self):
+        return self.status
 
     def call_refresh(self):
         refreshCaller = Refresh()
