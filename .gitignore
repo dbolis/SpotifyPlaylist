@@ -1,3 +1,5 @@
 manage.py
-*backend/
-
+backend/secrets.py
+backend/access.py
+*.pyc
+*.pyo

@@ -1,25 +1,81 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
+import requests
 from . import main
+from requests import Request, post
+from .access import CLIENT_ID, CLIENT_SECRET, REDIRECT_URI
 
 
 
 # Create your views here.
+def auth(request):
+    scopes = "playlist-modify-public playlist-modify-private playlist-read-private user-library-read user-read-private"
+
+    url = Request('GET', "https://accounts.spotify.com/authorize", params={
+        'scope':scopes,
+        'response_type':'code',
+        'redirect_uri': REDIRECT_URI,
+        'client_id': CLIENT_ID
+
+    }).prepare().url
+
+    return redirect(url)
 
 
+def login(request):
+    return render(request, 'login.html') 
 
 
-def index(request):
+def select(request):
 
-    
-    return render(request, 'index.html',{"name":39}) 
+    code = request.GET.get('code')
+    error = request.GET.get('error')
+
+    return render(request, 'select.html',{"code":code, "error":error}) 
+
+
 
 def success(request):
     
+    code = request.POST.get('code', False)
+
+    
+    if code == "None" or not code:
+        return redirect("login")
+    
+    
+    response = post("https://accounts.spotify.com/api/token", data={
+        'grant_type': 'authorization_code',
+        'code': code,
+        'redirect_uri': REDIRECT_URI,
+        'client_id': CLIENT_ID,
+        'client_secret': CLIENT_SECRET
+    }).json()
+    
+    
+
+    
+    
+    access_token = response.get("access_token")
+    token_type = response.get("token_type")
+
+    if access_token==None:
+        return redirect("login")
+
+    print("--------------------")
+    print(access_token)
+    print("--------------------")
+    print(token_type)
+    print("--------------------")
+    
+    
+
     playlistName = request.POST["name"]
     playlistLength = int(request.POST["playlistLength"])
 
     print(playlistLength)
+
+
 
     dance_l = request.POST["dance_l"]
     dance_m = request.POST["dance_m"]
@@ -77,11 +133,24 @@ def success(request):
     
 
     spotifyObject=main.SaveSongs(playlistLength,playlistName, user_features)
+    spotifyObject.call_refresh(access_token)
     
-    spotifyObject.call_refresh()
-    # a.get_user_playlists()
+    
+
+    
+
+    
+    # print(spotifyObject.get_status())
+
+    # if not spotifyObject.get_status():
+    #     return redirect("login")
+
     spotifyObject.find_songs()
-    print(spotifyObject.get_status())
+
+    if spotifyObject.error:
+        return redirect("login")
+
+    
 
     if spotifyObject.get_status():
         return render(request, 'success.html', {"status":"Success! '"+playlistName+"' has been created.","subtext":"Check your Spotify App!","color":"border-success"})

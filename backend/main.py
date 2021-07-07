@@ -4,10 +4,11 @@ import random
 
 from .secrets import spotify_user_id, DJ_playlist, tommy_user_id
 from .refresh import Refresh
+from django.shortcuts import render, redirect
 
 class SaveSongs:
     def __init__(self, max_playlist_length, playlist_name, user_features):
-        self.spotify_user_id = spotify_user_id
+        self.spotify_user_id = ""
         self.spotify_token = ""
         self.DJ_playlist = DJ_playlist
         self.tommy_user_id = tommy_user_id
@@ -20,8 +21,25 @@ class SaveSongs:
         self.playlist_name = playlist_name
         self.user_features = user_features
         self.status = False
+        self.error = False
 
     def find_songs(self):
+
+        queryUserId = "https://api.spotify.com/v1/me"
+        
+        responseUserId = requests.get(queryUserId, headers=self.header)
+
+        
+
+        if not responseUserId.ok:
+            self.error = True
+            return False
+
+
+        
+
+        self.spotify_user_id = responseUserId.json()["id"]
+
         print("Finding Songs")
         
         tracks=[]
@@ -31,6 +49,7 @@ class SaveSongs:
         queryPlaylists = "https://api.spotify.com/v1/users/{}/playlists?limit={}".format(self.spotify_user_id,50) # fix limit
         responsePlaylists = requests.get(queryPlaylists, headers=self.header)
         
+        print(responsePlaylists)
 
         for playlist in responsePlaylists.json()["items"]:
             print(playlist["name"])
@@ -302,11 +321,14 @@ class SaveSongs:
     def get_status(self):
         return self.status
 
-    def call_refresh(self):
-        refreshCaller = Refresh()
+    def call_refresh(self,access_token):
+        # refreshCaller = Refresh()
 
-        self.spotify_token = refreshCaller.refresh()
-        self.header = {"Content-Type": "application/json", "Authorization": "Bearer {}".format(self.spotify_token)}
+        # self.spotify_token = refreshCaller.refresh()
+        self.spotify_token = access_token
+        self.header = {"Content-Type": "application/json", "Authorization": "Bearer "+ self.spotify_token}
+        print(self.header)
+        print("hiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
 
     
         
