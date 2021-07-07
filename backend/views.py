@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-import requests
 from . import main
 from requests import Request, post
 from .access import CLIENT_ID, CLIENT_SECRET, REDIRECT_URI
@@ -8,6 +7,8 @@ from .access import CLIENT_ID, CLIENT_SECRET, REDIRECT_URI
 
 
 # Create your views here.
+
+# User logs into their account. Redirects to URI and returns access code
 def auth(request):
     scopes = "playlist-modify-public playlist-modify-private playlist-read-private user-library-read user-read-private"
 
@@ -21,11 +22,11 @@ def auth(request):
 
     return redirect(url)
 
-
+# Landing page
 def login(request):
     return render(request, 'login.html') 
 
-
+# track feature selection page. Access code is saved in hidden input field
 def select(request):
 
     code = request.GET.get('code')
@@ -37,13 +38,14 @@ def select(request):
 
 def success(request):
     
+    # get access code
     code = request.POST.get('code', False)
 
-    
+    # check if code not valid and redirect to login again if so 
     if code == "None" or not code:
         return redirect("login")
     
-    
+    # get access token
     response = post("https://accounts.spotify.com/api/token", data={
         'grant_type': 'authorization_code',
         'code': code,
@@ -51,31 +53,19 @@ def success(request):
         'client_id': CLIENT_ID,
         'client_secret': CLIENT_SECRET
     }).json()
-    
-    
-
-    
+ 
     
     access_token = response.get("access_token")
     token_type = response.get("token_type")
 
+    # if access token == None (happnes when you try to use access code twice)
     if access_token==None:
         return redirect("login")
 
-    print("--------------------")
-    print(access_token)
-    print("--------------------")
-    print(token_type)
-    print("--------------------")
-    
-    
+    # user selected song features
 
     playlistName = request.POST["name"]
     playlistLength = int(request.POST["playlistLength"])
-
-    print(playlistLength)
-
-
 
     dance_l = request.POST["dance_l"]
     dance_m = request.POST["dance_m"]
@@ -119,10 +109,6 @@ def success(request):
     if length_l=="0" and length_m=="0" and length_h=="0":
         length_l,length_m,length_h = "1","1","1"                
 
-    print([playlistName, dance_l, dance_m, dance_h, energy_l, energy_m, energy_h,\
-        acoustic_l, acoustic_m, acoustic_h, instrument_l, instrument_m, instrument_h, \
-        valence_l, valence_m, valence_h, length_l, length_m, length_h])
-
     user_features = {"dance": [dance_l, dance_m, dance_h], 
                 "energy": [energy_l, energy_m, energy_h],
                 "acoustic": [acoustic_l, acoustic_m, acoustic_h], 
@@ -130,28 +116,21 @@ def success(request):
                 "valence": [valence_l, valence_m, valence_h], 
                 "length": [length_l, length_m, length_h]}
     
-    
+    # create spotifyObject
 
     spotifyObject=main.SaveSongs(playlistLength,playlistName, user_features)
+
+    # add access token to object
     spotifyObject.call_refresh(access_token)
     
-    
-
-    
-
-    
-    # print(spotifyObject.get_status())
-
-    # if not spotifyObject.get_status():
-    #     return redirect("login")
-
+    # run playlist generator 
     spotifyObject.find_songs()
 
+    # if access is denied, redirect to login
     if spotifyObject.error:
         return redirect("login")
 
-    
-
+    # if at least one song found for specs return success message, otherwise return ask to expand ranges
     if spotifyObject.get_status():
         return render(request, 'success.html', {"status":"Success! '"+playlistName+"' has been created.","subtext":"Check your Spotify App!","color":"border-success"})
     else:

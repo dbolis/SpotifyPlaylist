@@ -1,5 +1,6 @@
 manage.py
 backend/secrets.py
 backend/access.py
+backend/refresh.py
 *.pyc
 *.pyo
