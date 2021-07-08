@@ -4,3 +4,4 @@ backend/access.py
 backend/refresh.py
 *.pyc
 *.pyo
+*.DS_Store
